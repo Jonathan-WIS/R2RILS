@@ -9,10 +9,10 @@ from scipy.sparse import linalg
 from sklearn.preprocessing import normalize
 
 
-def R2RILS(R, omega, rank, max_iter=50, early_stopping_tol=1e-15, smart_tol=True):
+def R2RILS(X, omega, rank, max_iter=50, early_stopping_tol=1e-15, smart_tol=True):
     """
-    :param R: Input matrix. Unobserved entries should be zero
-    :type R: np.ndarray
+    :param X: Input matrix. Unobserved entries should be zero
+    :type X: np.ndarray
     :param omega: Mask matrix. 1 on observed entries, 0 on unobserved.
     :type omega: np.ndarray
     :param rank: Underlying rank matrix.
@@ -24,7 +24,7 @@ def R2RILS(R, omega, rank, max_iter=50, early_stopping_tol=1e-15, smart_tol=True
     :return: R2RILS's estimate.
     """
     # initial estimate
-    (U, _, V) = linalg.svds(R, k=rank, tol=1e-16)
+    (U, _, V) = linalg.svds(X, k=rank, tol=1e-16)
     U = U.T
     n_1 = np.shape(U)[1]
     n_2 = np.shape(V)[1]
@@ -34,7 +34,7 @@ def R2RILS(R, omega, rank, max_iter=50, early_stopping_tol=1e-15, smart_tol=True
     sparse_matrix_rows, sparse_matrix_columns = generate_sparse_matrix_entries(omega, rank, n_1, n_2)
     A = generate_sparse_A(U, V, omega, sparse_matrix_rows, sparse_matrix_columns, num_visible_entries, n_1, n_2, rank)
     A, scale_vec = rescale_A(A)
-    b = generate_b(R, omega, n_1, n_2)
+    b = generate_b(X, omega, n_1, n_2)
     # find the least norm solution to Ax = b.
     x = linalg.lsqr(A, b)[0]
     x = x * scale_vec
@@ -43,7 +43,7 @@ def R2RILS(R, omega, rank, max_iter=50, early_stopping_tol=1e-15, smart_tol=True
         iter_num += 1
         x = convert_x_representation(x, rank, n_1, n_2)
         objective = np.sqrt(
-            np.linalg.norm((get_estimated_value(x, U, V, rank, n_1, n_2) - R) * omega, ord='fro') ** 2 * (
+            np.linalg.norm((get_estimated_value(x, U, V, rank, n_1, n_2) - X) * omega, ord='fro') ** 2 * (
                     1. / num_visible_entries))
         U_tilde, V_tilde = get_U_V_from_solution(x, rank, n_1, n_2)
         # ColNorm U_tilde, V_tilde
@@ -108,8 +108,8 @@ def generate_sparse_A(U, V, omega, row_entries, columns_entries, num_visible_ent
                                                shape=(num_visible_entries, rank * (n_1 + n_2))))
 
 
-def generate_b(R, omega, n_1, n_2):
-    return np.array([R[j][k] for j in range(n_1)
+def generate_b(X, omega, n_1, n_2):
+    return np.array([X[j][k] for j in range(n_1)
                      for k in range(n_2) if 0 != omega[j][k]])
 
 
