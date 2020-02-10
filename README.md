@@ -12,11 +12,16 @@ The entry point to run `R2RILS` is a function with the same name which expects t
 
 This method returns X_hat - `R2RILS` estimate for X0.
 #### Matlab
-The entry point for running `R2RILS` in Matlab is again a function bearing the same name and expects the following parameters:
+The entry point for running `R2RILS` in Matlab is again a function bearing the same name
+<br>
+function [X_hat U_hat V_hat] = R2RILS(X, omega, rank, t_max)
+<br>
+and expects the following parameters:
 - X: matrix with observed entries in the set omega.
 - omega: array of pairs (i,j) indicating which entries are observed.
 - rank: the target rank.
 - t_max: maximal number of iterations.
+
 This method returns [X_hat U_hat lambda_hat V_hat, observed_RMSE] where:
 - X_hat: rank 2r approximation of X0 (note that if `R2RILS` converges than the limiting point is in fact rank r).
 - U_hat: matrix of left singular vectors of the best rank r approximation of X_hat.
